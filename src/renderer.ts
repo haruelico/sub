@@ -27,5 +27,10 @@
  */
 
 import './index.css';
+import IWindow from './types/webkitSpeechRecognition'
+declare const window: IWindow;
 
 console.log('👋 This message is being logged by "renderer.js", included via webpack');
+
+const recognition =  new window.webkitSpeechRecognition();
+console.log(recognition)
