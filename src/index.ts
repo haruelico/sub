@@ -18,6 +18,8 @@ const createWindow = (): void => {
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+  mainWindow.loadURL("https://www.google.com/intl/ja/chrome/demos/speech.html",
+  {userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"});
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();

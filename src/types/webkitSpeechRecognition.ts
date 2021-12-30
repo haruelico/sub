@@ -25,7 +25,7 @@ interface ISpeechRecognition extends EventTarget {
   onaudiostart: () => void;
   onaudioend: () => void;
   onend: () => void;
-  onerror: () => void;
+  onerror: (event: any) => void;
   onnomatch: () => void;
   onresult: (event: ISpeechRecognitionEvent) => void;
   onsoundstart: () => void;
