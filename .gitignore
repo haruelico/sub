@@ -87,3 +87,6 @@ typings/
 
 # Electron-Forge
 out/
+
+# Google Cloud credential
+key.json
