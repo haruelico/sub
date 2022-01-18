@@ -82,7 +82,6 @@ export class Sox {
     const { cmd, args, cmdOptions } = this
 
     const cp = spawn(cmd, args, cmdOptions)
-    console.warn("aaaaaaaaaaaaaaaaaaaa")
     const rec = cp.stdout
     const err = cp.stderr
 
