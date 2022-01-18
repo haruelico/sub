@@ -84,6 +84,7 @@
     "typescript": "^4.0.2"
   },
   "dependencies": {
+    "@google-cloud/speech": "^4.9.0",
     "debug": "^4.3.3",
     "electron-squirrel-startup": "^1.0.0"
   }
