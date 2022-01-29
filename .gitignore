@@ -90,3 +90,6 @@ out/
 
 # Google Cloud credential
 key.json
+
+# environment variables
+envs.ps1
