@@ -8,6 +8,7 @@ import speech from "@google-cloud/speech"
 // plugin that tells the Electron app where to look for the Webpack-bundled app code (depending on
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
+declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 const sox = new Sox()
 const speechClient = new speech.SpeechClient()
 const recognizeStream = speechClient.streamingRecognize({
@@ -31,11 +32,15 @@ if (require('electron-squirrel-startup')) { // eslint-disable-line global-requir
   app.quit();
 }
 
-const createWindow = (): void => {
+const createWindow = (): BrowserWindow => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
     width: 800,
+    webPreferences: {
+      contextIsolation: true,
+      preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY
+    }
   });
 
   // and load the index.html of the app.
@@ -43,12 +48,36 @@ const createWindow = (): void => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  return mainWindow
 };
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow);
+app.on('ready', () => {
+  const window = createWindow()
+
+  const recognizeStream = speechClient.streamingRecognize({
+    config: {
+      encoding: "LINEAR16",
+      sampleRateHertz: 16000,
+      languageCode: "ja-JP"
+    },
+    interimResults: true
+  }).on("error", console.error).on("data", data => {
+    let text = data.results[0] && data.results[0].alternatives[0] ? data.results[0].alternatives[0].transcript: 'none'
+
+    console.log(text)
+    window.webContents.send("speech-to-text", text)
+    console.log(
+      data.results[0] && data.results[0].alternatives[0] ?
+        `Transcription: ${data.results[0].alternatives[0].transcript}`
+        : '\n\nReached transcription time limit, press Ctrl+C\n'
+    )
+  })
+  sox.start().stream().on('error', console.error).pipe(recognizeStream)
+});
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
