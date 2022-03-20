@@ -27,32 +27,23 @@
  */
 
 import './index.css';
-import IWindow from './types/webkitSpeechRecognition'
-declare const window: IWindow;
-
+// import { ipcRenderer } from 'electron'
+// import ky from 'ky';
 console.log('👋 This message is being logged by "renderer.js", included via webpack');
 
-const recognition =  new window.webkitSpeechRecognition();
-console.log(recognition)
-// recognition.start()
-recognition.continuous = true
-recognition.lang = 'ja-JP'
-recognition.interimResults = true
-console.log(recognition)
-
-document.body.onclick = function() {
-  recognition.start();
-  console.log('Ready to receive a color command.');
+interface IElectronAPI {
+  speechToText: (arg: Function) => Promise<void>
+  getDeeplApiKey: () => Promise<string>
 }
 
-recognition.onresult = function (event){
-  console.log(event)
+declare global {
+  interface Window {
+    electron: IElectronAPI
+  }
 }
 
-recognition.onstart = function () {
-  console.warn("recognition started")
-}
-  
-recognition.onerror = function(event){
-  console.log(event)
-}
+
+window.electron.speechToText((arg: any) => {
+  console.log(arg)
+  document.getElementById("text").textContent = `${arg.translations[0].text} ${arg.original}`
+})
