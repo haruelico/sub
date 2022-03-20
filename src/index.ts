@@ -137,7 +137,7 @@ function restartStream() {
     recognizeStream = null
 
   }
-  if(resultEndTime > 0) {
+  if (resultEndTime > 0) {
     finalRequestEndTime = isFinalEndTime
   }
   resultEndTime = 0
@@ -169,24 +169,15 @@ app.on('ready', () => {
     },
     interimResults: true,
     // singleUtterance: true
-  }).on("error", console.error).on("data", data => {
+  }).on("error", console.error).on("data", throttle(data => {
     let text = data.results[0] && data.results[0].alternatives[0] ? data.results[0].alternatives[0].transcript : 'none'
+    console.log("-------------send request to deepl")
+    requestToDeepl(text).then(translate => {
 
-    // console.log(text)
-    // window.webContents.send("speech-to-text", text);
-    throttle((text) => {
-      requestToDeepl(text).then(translate => {
-
-        console.log(translate)
-        window.webContents.send("speech-to-text", { ...translate, original: text })
-      })
-    }, 3000)(text)
-    console.log(
-      data.results[0] && data.results[0].alternatives[0] ?
-        `Transcription: ${data.results[0].alternatives[0].transcript}`
-        : '\n\nReached transcription time limit, press Ctrl+C\n'
-    )
-  })
+      console.log(translate)
+      window.webContents.send("speech-to-text", { ...translate, original: text })
+    })
+  }, 3000, { trailing: true }))
   sox.start().stream().on('error', console.error).pipe(recognizeStream)
 });
 
