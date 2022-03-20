@@ -26,6 +26,8 @@
  * ```
  */
 
+import React from "react";
+import ReactDOM from "react-dom";
 import './index.css';
 // import { ipcRenderer } from 'electron'
 // import ky from 'ky';
@@ -47,3 +49,8 @@ window.electron.speechToText((arg: any) => {
   console.log(arg)
   document.getElementById("text").textContent = `${arg.translations[0].text} ${arg.original}`
 })
+
+ReactDOM.render(
+  <div>"hello from react"</div>,
+  document.getElementById("app")
+)
