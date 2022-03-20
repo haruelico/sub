@@ -29,6 +29,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import './index.css';
+import { App } from "./components/App";
 // import { ipcRenderer } from 'electron'
 // import ky from 'ky';
 console.log('👋 This message is being logged by "renderer.js", included via webpack');
@@ -46,11 +47,11 @@ declare global {
 
 
 window.electron.speechToText((arg: any) => {
-  console.log(arg)
-  document.getElementById("text").textContent = `${arg.translations[0].text} ${arg.original}`
+  // console.log(arg)
+  // document.getElementById("text").textContent = `${arg.translations[0].text} ${arg.original}`
 })
 
 ReactDOM.render(
-  <div>"hello from react"</div>,
+  <App />,
   document.getElementById("app")
 )
