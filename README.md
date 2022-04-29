@@ -1,0 +1,5 @@
+# sub
+
+## 環境変数
+* `GOOGLE_CLOUD_CREDENTRIALS`
+* `DEEPL_API_KEY`
