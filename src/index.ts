@@ -47,21 +47,20 @@ const requestToDeepl = async (text: string): Promise<object> => {
         'Content-Type': "application/x-www-form-urlencoded"
       }
     }).json()
-    console.log(data)
     return data as object
   } catch (e) {
     console.warn(e)
   }
 }
 
-const streamingLimit = 10000
+const streamingLimit = 2000000
 let bridgingOffset = 0
 let restartCounter = 0
 let isFinalEndTime = 0
 let lastTranscriptWasFinal = false
 let newStream = true
-// @ts-ignore
-let lastAudioInput = []
+let audioInput: any[] = []
+let lastAudioInput: any[] = []
 let finalRequestEndTime = 0
 let resultEndTime = 0
 let recognizeStream = speechClient.streamingRecognize({
@@ -159,26 +158,46 @@ function restartStream() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-  const window = createWindow()
+  const window = createWindow();
 
-  const recognizeStream = speechClient.streamingRecognize({
-    config: {
-      encoding: "LINEAR16",
-      sampleRateHertz: 16000,
-      languageCode: "ja-JP"
-    },
-    interimResults: true,
-    // singleUtterance: true
-  }).on("error", console.error).on("data", throttle(data => {
-    let text = data.results[0] && data.results[0].alternatives[0] ? data.results[0].alternatives[0].transcript : 'none'
-    console.log("-------------send request to deepl")
-    requestToDeepl(text).then(translate => {
+  (async () => {
+    while (true) {
+      try {
+        await new Promise((resolve, reject) => {
+          console.log("start recognize")
+          const recognizeStream = speechClient.streamingRecognize({
+            config: {
+              encoding: "LINEAR16",
+              sampleRateHertz: 16000,
+              languageCode: "ja-JP"
+            },
+            interimResults: true,
+            // singleUtterance: true
+          }).on("error", console.error).on("data", throttle(data => {
+            let text = data.results[0] && data.results[0].alternatives[0] ? data.results[0].alternatives[0].transcript : 'none'
+            requestToDeepl(text).then(translate => {
+              window.webContents.send("speech-to-text", { ...translate, original: text })
+            }).catch(() => {
+              console.warn("deepl timeout")
+            })
+          }, 3000, { trailing: true }))
 
-      console.log(translate)
-      window.webContents.send("speech-to-text", { ...translate, original: text })
-    })
-  }, 3000, { trailing: true }))
-  sox.start().stream().on('error', console.error).pipe(recognizeStream)
+          sox.start().stream().on('error', e => {
+            console.error(e)
+            sox.stop()
+            reject('error')
+          }).pipe(recognizeStream)
+
+          setTimeout(() => {
+            sox.stop()
+            resolve(true)
+          }, streamingLimit)
+        })
+      } catch (err) {
+        console.error(err)
+      }
+    }
+  })();
 });
 
 // Quit when all windows are closed, except on macOS. There, it's common
